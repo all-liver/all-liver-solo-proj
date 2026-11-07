@@ -76,8 +76,10 @@ void sort(course &dau)
 int search(course dau, int w, path *p)
 {
     int nw = w + dau.weight, smallest = 999999, i;
-    path *tempp = new path, *np;
-    if (p->next == nullptr)
+    path *tempp = new path{nullptr, nullptr}, *np;
+    if (p == nullptr)
+        np = new path{nullptr, nullptr};
+    else if (p->next == nullptr)
     {
         np = p->next;
         np->next->coe = nullptr;
@@ -85,8 +87,7 @@ int search(course dau, int w, path *p)
     else
     {
         np = new path{nullptr, nullptr};
-        if (p != nullptr)
-            p->next = np;
+        p->next = np;
     }
     np->coe = &dau;
     if (dau.parent == nullptr)
@@ -101,7 +102,7 @@ int search(course dau, int w, path *p)
         if (i < smallest)
         {
             smallest = i;
-            mergeList(np->next, tempp->next);
+            mergeList(np->next, tempp);
         }
         current = current->next;
     }
@@ -114,14 +115,16 @@ int main()
     string input;
     course temp;
     path *pa, *record = nullptr;
-    cin >> n;
-    cin >> m;
     getline(cin, input);
     istringstream ss(input);
+    ss >> n;
+    ss >> m;
+    getline(cin, input);
+    istringstream ss1(input);
     course *courses = new course[n];
     for (i = 0; i < n; i++)
     {
-        ss >> j;
+        ss1 >> j;
         courses[i] = {j, nullptr};
     }
     for (i = 0; i < m; i++)
@@ -134,10 +137,11 @@ int main()
         courses[k].parent = pa;
     }
     cin >> n;
-    cout << search(courses[n], 0, record) << endl;
-    while (record != nullptr && record->coe != nullptr)
+    cout << search(courses[n], 0, record);
+    return 0;
+    /*while (record != nullptr && record->coe != nullptr)
     {
         cout << record->coe->weight << " ";
         record = record->next;
-    }
+    }*/
 }
