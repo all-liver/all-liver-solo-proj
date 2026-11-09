@@ -1,68 +1,93 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <list>
+#include <vector>
+#include <stack>
 using namespace std;
 
-struct course{
-    int weight;
-    list <course*> parent;
-    private:
-
+struct path{
+    int parent;
+    path *next;
 };
 
-course* minpar (course dau){
-    list <course*> storage;
-    int i=dau.parent.size();
-    for (int j=0;j<i;j++){
-
+void sortinsert(path *&lis, int i,int weight[])
+{
+    path *ele=new path{i,nullptr};
+    if (lis == nullptr){
+        lis=ele;
+        return;
     }
+    if (weight[lis->parent] > weight[i])
+    {
+        ele->next = lis;
+        lis = ele;
+        return;
+    }
+    path *current = lis;
+    while (current->next != nullptr)
+    {
+        if (weight[current->next->parent]>weight[i])
+        {
+            ele->next = current->next;
+            current->next = ele;
+            break;
+        }
+        current = current->next;
+    }
+    current->next = ele;
 }
 
-list<course*> sort (list<course*>inputs,course ele){
-    if (ele.weight>inputs.front()->weight){
-        inputs.push_back(&ele);
-        return inputs;
+void sort(int i,stack<int> record,int weight[],vector<path*>&storage){
+    path*start=nullptr;
+    while (record.size()){
+        sortinsert(start,record.top(),weight);
+        record.pop();
     }
+    storage[i]=start;
 }
 
-int traverse(course dau){
-    if (dau.parent.size()==0) return dau.weight;
-    int i=dau.parent.size(),min=99999;
-    for (int j=0;j<i;j++){
-        if (min<adfd.weight) break;
-        min=((min>traverse(kjsd))?traverse():min);
+int search(int i,stack<int> *matrix,int minvalue[],int weight[],vector<path*>&sorts,int acc){
+    if (matrix->empty()) return acc+weight[i];
+    if (sorts[i]!=nullptr) return minvalue[i];
+    sort(i,*matrix,weight,sorts);
+    path*current=sorts[i];
+    int minimum=99999999,j;
+    stack<int>*newstack;
+    while (current!=nullptr){
+        if (weight[current->parent]>minimum) break;
+        newstack=matrix+(current->parent)-i;
+        j=search(current->parent,newstack,minvalue,weight,sorts,0);
+        if (j<minimum) minimum=j;
+        current=current->next;
     }
-    return min;
-}
-
-course* minpar(course dau,int order){
-    if (dau.parent.size()==1) return dau.parent.front();
-    course** temp=new course*[n]
-    for (course*p:dau.parent){
-
-    }
-    
+    minvalue[i]=weight[i]+minimum;
+    return acc+weight[i]+minimum;
 }
 
 int main(){
-    int n,m,i,j,k;
+    int n, m, i, j, k;
     string input;
-    course temp;
-    cin>>n;
-    cin>>m;
-    getline(cin,input);
+    getline(cin, input);
     istringstream ss(input);
-    course* courses=new course[n];
-    for (i=0;i<n;i++){
-        ss>>j;
-        courses[i].weight=j;
+    ss >> n;
+    ss >> m;
+    vector<stack<int>>adj(n);
+    vector<path*>sorts(n,nullptr);
+    int *weight=new int[n],*minvalue=new int[n]{0};
+    getline(cin, input);
+    istringstream ss1(input);
+    for (i = 0; i < n; i++)
+    {
+        ss1 >> weight[i];
     }
-    for (i=0;i<m;i++){
-        getline(cin,input);
+    for (i = 0; i < m; i++)
+    {
+        getline(cin, input);
         istringstream ss(input);
-        ss>>j;
-        ss>>k;
-        courses[k].parent=&courses[j];
+        ss >> j;
+        ss >> k;
+        adj[k].push(j);
     }
+    cin >> n;
+    cout<<search(n,&adj[n],minvalue,weight,sorts,0)-weight[n];
 }
