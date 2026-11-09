@@ -11,9 +11,10 @@ struct path{
 };
 class transverse{
 protected:
-    void interior(int n);
+    void interior(int i);
 public:
-    void shell(int n, vector<path *> paths)
+    int n;
+    void shell(vector<path *> paths)
     {
         int i;
         path *temp;
@@ -32,6 +33,11 @@ public:
             }
         }
     }
+};
+
+class t_down:transverse{
+public:
+
 };
 
 int main(){
