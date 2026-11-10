@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <queue>
+#include <stack>
 using namespace std;
 
 struct path{
@@ -10,74 +11,82 @@ struct path{
     path *next;
 };
 
-class transverse{
-protected:
-    virtual int interior(int i)=0;
-    virtual bool intbreak(int i)=0;
-public:
+struct searcher{
+    //records is for recording all the values that can be reached without n.
+    //If it cannot be reached without n, its dauhter courses may be reached from another path
     int n;
-    vector<path *> paths;
-    int shell()
-    {
-        int i,sum=0;
-        path *temp;
+    vector<bool>records;
+    vector<path*>up;
+    vector<path *> down;
+
+    bool searchup(int j){
+        int length = up.size(), i, sum = 0;
+        path *current;
+        stack<int> process_line;
+        vector<bool>visited(length,false);
+        visited[n]=true;
+        process_line.push(j);
+        while (!process_line.empty())
+        {
+            i = process_line.top();
+            process_line.pop();
+            visited[i] = true;
+            // whatever here
+            if (records[i]) return false;
+            
+
+            current = up[i];
+            if (current == nullptr)
+                return false;
+            while (current != nullptr)
+            {
+                if (!visited[current->course])
+                    process_line.push(current->course);
+                current = current->next;
+            }
+        }
+        return true;
+    }
+
+    int searchdown(){
+        int length = up.size(), i, sum = 0;
+        path *current;
         queue<int> process_line;
-        vector<bool> visited(paths.size(),false);
+        vector<bool> visited(length, false);
         process_line.push(n);
         while (!process_line.empty())
         {
             i = process_line.front();
-            visited[i]=true;
             process_line.pop();
-            temp = paths[i];
-            sum+=interior(i);
-            if (intbreak(i)) break;
-            while (temp != nullptr)
+            visited[i]=true;
+
+            if (searchup(i)){
+                sum++;
+            }else{
+                records[i]=true;
+            }
+            // whatever here
+            current = down[i];
+            while (current != nullptr)
             {
-                i=temp->course;
-                if (!visited[i]) process_line.push(i);
-                temp = temp->next;
+                if (!visited[current->course])
+                    process_line.push(current->course);
+                current = current->next;
             }
         }
         return sum;
     }
-};
 
-class t_up:public transverse{
-protected:
-    int interior(int i){
-        return (paths[i]==nullptr);
-    }
-    bool intbreak(int i){
-        return (paths[i]==nullptr);
-    }
-public:
-
-    t_up(vector<path*>pup,int n){
+    searcher(int n,vector<path*>up,vector<path *> down){
         this->n=n;
-        paths=pup;
+        this->up=up;
+        this->down=down;
+        records=vector<bool>(up.size(),false);
     }
 };
 
-class t_down:public transverse{
-protected:
-    int interior(int i){
-        t_up upward_search(up_path,i);
-        return (upward_search.shell()<1);
-    }
-    bool intbreak(int i){
-        return false;
-    }
-public:
-    vector<path*>up_path;
-    t_down(int x,vector<path*>down_path,vector<path*>up_path){
-        n=x;
-        paths=down_path;
-        this->up_path=up_path;
-    }
-};
-
-int main(){
+int
+main(){
     int n, m, i, j, k;
     path *temp;
     string input;
@@ -99,6 +108,7 @@ int main(){
         next[j] = temp;
     }
     cin >> n;
-    t_down searching(n,next,previous);
-    cout<<searching.shell();
+    searcher searching(n,previous,next);
+    cout<< searching.searchdown();
+
 }
