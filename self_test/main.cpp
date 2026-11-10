@@ -14,20 +14,22 @@ struct path{
 struct searcher{
     //records is for recording all the values that can be reached without n.
     //If it cannot be reached without n, its dauhter courses may be reached from another path
-    int n,c;
-    path*current;
+    int n;
     vector<bool>records;
     vector<path*>up;
     vector<path *> down;
     vector<bool>upvisited;
     stack<int>devlog;
 
-    bool recording(int c){
-        records[c]=true;
+    bool recording(int k){
+        records[k]=true;
         return false;
     }
 
     bool searchup(int j){
+        int c;
+        path *current;
+        current=up[j];
         if (current==nullptr) return recording(j);
         while (current!=nullptr){
             c=current->course;
