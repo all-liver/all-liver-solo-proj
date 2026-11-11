@@ -1,9 +1,8 @@
 #include <iostream>
 #include <string>
-#include <sstream>
-#include <vector>
 #include <queue>
-#include <stack>
+#include <vector>
+#include <utility>
 using namespace std;
 
 struct path{
@@ -11,116 +10,88 @@ struct path{
     path *next;
 };
 
-struct searcher{
-    //records is for recording all the values that can be reached without n.
-    //If it cannot be reached without n, its dauhter courses may be reached from another path
-    int n;
-    vector<bool>records;
-    vector<path*>up;
-    vector<path *> down;
-    vector<bool>upvisited;
-    stack<int>devlog;
-
-    bool recording(int k){
-        records[k]=true;
-        return false;
+void heapify(int array[],int i,int n){
+    int largest=i;
+    int left=2*i+1;
+    int right=2*i+2;
+    if (left>=n)left=i;
+    if (right>=n)right=i;
+    if (array[left]>array[i]) largest=left;
+    if (array[right]>array[largest]) largest=right;    
+    if (i!=largest){
+        swap(array[i],array[largest]);
+        heapify(array,largest,n);
     }
+}
 
-    bool searchup(int j){
-        int c;
-        path *current;
-        current=up[j];
-        if (current==nullptr) return recording(j);
-        while (current!=nullptr){
-            c=current->course;
-            current=current->next;
-            if (records[c]) return recording(c);
-            if (j==n||upvisited[c]) continue;
-            upvisited[c]=true;
-            if (!searchup(c)){
-                return recording(c);
-            }
+void sort(int array[],int n){
+    int heap_size=n/2-1,i;
+    for (i=heap_size;i>-1;i--){
+        heapify(array,i,n);
+    }
+    int n2=n;
+    for (i=n-1;i>heap_size;i--){
+        swap(array[0],array[i]);
+        n2--;
+        heapify(array,0,n2);
+    }
+}
+
+int main(){
+    int n, m, i, j, k, count = 0, index = 0;
+    path *temp, *start;
+    bool flag = false;
+    scanf("%d %d", &n, &m);
+    vector<path *> adt(n, nullptr);
+    vector<bool> visited(n, true);
+    for (i = 0; i < m; i++){
+        scanf("%d %d\n", &j, &k);
+        if (visited[k]){
+            visited[k] = false;
+            count++;
         }
-        return true;
+        temp = new path{k, adt[j]};
+        adt[j] = temp;
     }
-
-    int searchdown(){
-        int length = up.size(), i, sum = 0;
-        path *current;
-        queue<int> process_line;
-        vector<bool> visited(length, false);
-        process_line.push(n);
-        while (!process_line.empty())
+    cin >> k;
+    j = 0;
+    queue<int> *q, *q2;
+    for (i = 0; i < m; i++){
+        if (!visited[i]){
+            j++;
+            q->push(i);
+            if (i == k) flag = true;
+        }
+        if (j == n - count)
+            break;
+    }
+    if (flag){
+        int *last_list=new int[q->size()];
+        sort(last_list,q->size());
+    }
+    do{
+        index += q->size();
+        while (!q->empty())
         {
-            i = process_line.front();
-            process_line.pop();
-            if (visited[i]) continue;
-            if (i!=n){
-            if (searchup(i)){
-                sum++;
-                //devlog.push(i);
-            }}
-            visited[i]=true;
-            // whatever here
-            current = down[i];
-            while (current != nullptr)
+            i = q->front();
+            q->pop();
+            temp = adt[i];
+            while (temp != nullptr)
             {
-                if (!visited[current->course])
-                    process_line.push(current->course);
-                current = current->next;
+                i = temp->course;
+                if (!visited[i])
+                    q2->push(i);
+                visited[i] = true;
+                if (k == i)
+                    flag = true;
+                temp = temp->next;
             }
         }
-        return sum;
+        if (flag){
+            //type here
+        }else{
+            delete q;
+            q=q2;
+        }
     }
-
-    searcher(int n,vector<path*>up,vector<path *> down){
-        this->n=n;
-        this->up=up;
-        this->down=down;
-        this->records=vector<bool>(up.size(),false);
-        vector<bool>upvisited(up.size(),false);
-        this->upvisited=upvisited;
-        this->upvisited[n]=true;
-    }
-};
-
-int
-main(){
-    int n, m, i, j, k;
-    path *temp;
-    string input;
-    getline(cin, input);
-    istringstream ss(input);
-    ss >> n;
-    ss >> m;
-    vector<path *> previous(n, nullptr);
-    vector<path *> next(n, nullptr);
-    for (i = 0; i < m; i++)
-    {
-        getline(cin, input);
-        istringstream ss(input);
-        ss >> j;
-        ss >> k;
-        temp = new path{j, previous[k]};
-        previous[k] = temp;
-        temp = new path{k, next[j]};
-        next[j] = temp;
-    }
-    cin >> n;
-    searcher searching(n,previous,next);
-    i= searching.searchdown();
-    cout<<i<<endl;
-/*    cout<<searching.records.size()<<endl;
-    cout<<searching.upvisited.size()<<endl;
-    for (int a=0;a<i;a++){
-        cout<<searching.devlog.top()<<endl;
-        searching.devlog.pop();
-    }
-    int b=0,c=0;
-    for (int a=0;a<searching.upvisited.size();a++){
-        if (searching.records[a]) b++;
-        if (searching.upvisited[a])c++;
-    }
-    cout<<b<<endl;
-    cout<<c<<endl;*/
 }
